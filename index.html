@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ネタ帳">
+<meta name="theme-color" content="#f5ede3">
+<title>まゆみのnoteネタ帳</title>
+<link rel="apple-touch-icon" href="https://assets.st-note.com/production/uploads/images/257495679/profile_64ac46a60ce7e2a894da09994c0173f9.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5ede3;
+    --paper: #faf6f0;
+    --ink: #2a1f14;
+    --warm: #b8895a;
+    --sage: #6b8f71;
+    --blush: #c4786e;
+    --mist: #e4d9cc;
+    --accent: #7a5c3e;
+    --gold: #c9a96e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Noto Serif JP', serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    overflow-x: hidden;
+  }
+
+  /* 朝日風グラデーション背景 */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 260px;
+    background: linear-gradient(180deg,
+      #f9dfc4 0%,
+      #f5c99a 30%,
+      #f0b87a 60%,
+      #f5ede3 100%);
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 0 100px;
+  }
+
+  /* ヘッダー */
+  .header {
+    padding: 56px 24px 32px;
+    text-align: center;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .header-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid white;
+    box-shadow: 0 4px 20px rgba(184,137,90,0.3);
+    margin-bottom: 16px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .header-avatar-fallback {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--warm), var(--gold));
+    border: 3px solid white;
+    box-shadow: 0 4px 20px rgba(184,137,90,0.3);
+    margin: 0 auto 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  .header-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--warm);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    line-height: 1.4;
+  }
+
+  .header h1 span { color: var(--accent); font-weight: 600; }
+
+  .header-line {
+    width: 48px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--warm), transparent);
+    margin: 14px auto;
+  }
+
+  .header-sub {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: var(--accent);
+    opacity: 0.75;
+  }
+
+  /* テーマカード */
+  .themes {
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .theme-card {
+    background: white;
+    border-radius: 16px;
+    border: 1.5px solid var(--mist);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .theme-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--card-color);
+    transform: scaleY(0);
+    transform-origin: center;
+    transition: transform 0.25s ease;
+    border-radius: 0 2px 2px 0;
+  }
+
+  .theme-card.sel::before { transform: scaleY(1); }
+  .theme-card.sel {
+    border-color: var(--card-color);
+    background: var(--card-bg);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  .theme-icon { font-size: 26px; flex-shrink: 0; }
+
+  .theme-info { flex: 1; }
+
+  .theme-name {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .theme-count {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 11px;
+    color: var(--accent);
+    opacity: 0.7;
+  }
+
+  .theme-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--card-color);
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    transform: scale(0.7);
+    flex-shrink: 0;
+  }
+
+  .theme-card.sel .theme-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* 収集ボタン */
+  .collect-wrap {
+    padding: 0 16px 8px;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+
+  .collect-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--warm));
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 16px;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 24px rgba(122,92,62,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .collect-btn:active { transform: scale(0.98); }
+  .collect-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* ローディング */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 32px;
+  }
+  .loading.on { display: block; }
+
+  .loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    animation: bounce 1.2s ease infinite;
+  }
+
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-14px); opacity: 1; }
+  }
+
+  .loading-txt {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  /* 結果 */
+  .results { display: none; padding: 20px 16px 0; }
+  .results.on { display: block; animation: fadeUp 0.5s ease both; }
+
+  .results-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--mist);
+  }
+
+  .results-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: var(--accent);
+  }
+
+  .results-date {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 11px;
+    color: var(--warm);
+    letter-spacing: 1px;
+  }
+
+  .neta-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--mist);
+    padding: 20px;
+    margin-bottom: 14px;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+
+  .neta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+
+  .neta-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.65;
+    margin-bottom: 10px;
+    color: var(--ink);
+  }
+
+  .neta-hook {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    color: var(--accent);
+    line-height: 1.85;
+    margin-bottom: 14px;
+    opacity: 0.85;
+  }
+
+  .neta-points {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+
+  .neta-points-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--warm);
+    margin-bottom: 8px;
+  }
+
+  .neta-point {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.9;
+    padding-left: 12px;
+    position: relative;
+    opacity: 0.85;
+  }
+
+  .neta-point::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--warm);
+    font-size: 9px;
+    top: 5px;
+  }
+
+  .neta-cta {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: var(--sage);
+    font-weight: 700;
+    border-top: 1px dashed var(--mist);
+    padding-top: 12px;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--bg);
+    border: 1px solid var(--mist);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .copy-btn.done { background: var(--sage); border-color: var(--sage); color: white; }
+
+  /* LINE */
+  .line-box {
+    background: linear-gradient(135deg, #06c755, #04a847);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+
+  .line-title {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 14px;
+    opacity: 0.9;
+  }
+
+  .line-btns { display: flex; flex-direction: column; gap: 10px; }
+
+  .line-copy-btn {
+    background: white;
+    color: #06c755;
+    border: none;
+    padding: 13px;
+    border-radius: 12px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .line-send-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.6);
+    padding: 13px;
+    border-radius: 12px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .line-send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .line-status {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: white;
+    margin-top: 10px;
+    opacity: 0.9;
+  }
+
+  .line-note {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  /* もう一度ボタン */
+  .again-btn {
+    width: 100%;
+    background: white;
+    color: var(--accent);
+    border: 1.5px solid var(--mist);
+    padding: 15px;
+    border-radius: 16px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  }
+
+  .again-btn:active { transform: scale(0.98); }
+
+  /* 設定ボタン */
+  .settings-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: white;
+    border: 1.5px solid var(--mist);
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(122,92,62,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: all 0.2s;
+  }
+
+  .settings-btn:active { transform: scale(0.9); }
+
+  /* モーダル */
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(42,31,20,0.55);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .modal-bg.on { display: flex; animation: fadeIn 0.2s ease; }
+
+  .modal {
+    background: var(--paper);
+    border-radius: 24px 24px 0 0;
+    padding: 28px 24px 40px;
+    width: 100%;
+    max-width: 480px;
+    animation: slideUp 0.3s ease;
+  }
+
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--mist);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    opacity: 0.8;
+  }
+
+  .field { margin-bottom: 18px; }
+
+  .field-label {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--warm);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 13px 16px;
+    border: 1.5px solid var(--mist);
+    border-radius: 12px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    background: white;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus { border-color: var(--warm); }
+
+  .modal-btns { display: flex; gap: 10px; margin-top: 24px; }
+
+  .btn-cancel {
+    background: var(--mist);
+    color: var(--accent);
+    border: none;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .btn-save {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent), var(--warm));
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* フッター */
+  .footer {
+    text-align: center;
+    padding: 32px 0 8px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 10px;
+    color: var(--warm);
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+
+  /* アニメーション */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(40px); }
+    to { transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ヘッダー -->
+  <div class="header">
+    <img class="header-avatar"
+      src="https://assets.st-note.com/production/uploads/images/257495679/profile_64ac46a60ce7e2a894da09994c0173f9.jpeg"
+      alt="まゆみ"
+      onerror="this.style.display='none';document.getElementById('avatar-fallback').style.display='flex'">
+    <div class="header-avatar-fallback" id="avatar-fallback" style="display:none">🌸</div>
+    <div class="header-label">✦ Note Neta Collector ✦</div>
+    <h1>まゆみの<span>noteネタ帳</span></h1>
+    <div class="header-line"></div>
+    <p class="header-sub" id="stock-count">テーマを選んでボタンひとつ</p>
+  </div>
+
+  <!-- テーマ選択 -->
+  <div class="themes" id="themes"></div>
+
+  <!-- 収集ボタン -->
+  <div class="collect-wrap">
+    <button class="collect-btn" id="collectBtn" onclick="collectNeta()">✦ ネタを収集する ✦</button>
+  </div>
+
+  <!-- ローディング -->
+  <div class="loading" id="loading">
+    <div class="loading-dots">
+      <div class="dot" style="background:#b8895a;animation-delay:0s"></div>
+      <div class="dot" style="background:#6b8f71;animation-delay:0.2s"></div>
+      <div class="dot" style="background:#c4786e;animation-delay:0.4s"></div>
+    </div>
+    <div class="loading-txt" id="loadingTxt">ネタを選んでいます…</div>
+  </div>
+
+  <!-- 結果 -->
+  <div class="results" id="results">
+    <div class="results-head">
+      <span class="results-label">今日のネタ候補</span>
+      <span class="results-date" id="resultsDate"></span>
+    </div>
+    <div id="netaCards"></div>
+
+    <div class="line-box" id="lineBox">
+      <div class="line-title">📱 LINEに送る</div>
+      <div class="line-btns">
+        <button class="line-copy-btn" onclick="copyLineText()">📋 テキストをコピー</button>
+        <button class="line-send-btn" id="lineSendBtn" onclick="sendToLine()" style="display:none">📨 LINEに直接送信</button>
+      </div>
+      <div class="line-status" id="lineStatus"></div>
+      <div class="line-note" id="lineNote">⚙️ 右下のボタンでLINEトークンを設定すると直接送信できます</div>
+    </div>
+
+    <button class="again-btn" onclick="collectNeta()">🔄 別のネタを見る</button>
+  </div>
+
+  <div class="footer">mayumi_midorikawa · noteネタ帳</div>
+</div>
+
+<!-- 設定ボタン -->
+<button class="settings-btn" onclick="openSettings()">⚙️</button>
+
+<!-- 設定モーダル -->
+<div class="modal-bg" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📱 LINE直接送信の設定</div>
+    <div class="modal-sub">チャンネルアクセストークンとユーザーIDを入力してください。このデバイスにのみ保存されます。</div>
+    <div class="field">
+      <label class="field-label">チャンネルアクセストークン</label>
+      <input type="password" id="inputToken" placeholder="発行したトークンを貼り付け">
+    </div>
+    <div class="field">
+      <label class="field-label">あなたのユーザーID</label>
+      <input type="text" id="inputUserId" placeholder="U から始まるID">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('modal').classList.remove('on')">キャンセル</button>
+      <button class="btn-save" onclick="saveSettings()">💾 保存する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const THEMES = {
+  women50: { name: "50代女性の生き方", icon: "🌸", color: "#b8895a", bg: "#fdf5ec" },
+  aidesign: { name: "AI・デザイン", icon: "🤖", color: "#6b8f71", bg: "#f0f5f1" },
+  quantum: { name: "量子力学的自己啓発", icon: "✨", color: "#c4786e", bg: "#fdf0ef" },
+};
+
+const NETA = {
+  women50: [
+    { title: "50代、働き方をリセットした話", hook: "「もう無理かも」と思った朝、私は会社に電話した。あれが人生の転換点だった。", points: ["なぜ限界が来たのか正直に書く", "リセット後の不安と解放感の両方", "今だから言える後悔と学び"], cta: "あなたも「リセットしたい」と思ったことはありますか？" },
+    { title: "更年期と仕事、正直しんどかった", hook: "誰にも言えなかった。でも言わないともっとしんどかった。更年期と働くことの話。", points: ["症状を隠して働いた日々", "上司・同僚への打ち明け方", "職場環境を変えるためにしたこと"], cta: "同じ経験をした方、ぜひコメントで教えてください。" },
+    { title: "子どもが巣立って気づいたこと", hook: "静かになった家。泣くかと思ったら、なぜか清々しかった。空の巣症候群にならなかった理由。", points: ["子育て終了後の感情の正直な記録", "自分時間の使い方が変わった", "「母」以外の自分を取り戻す過程"], cta: "お子さんが巣立った後、あなたはどう感じましたか？" },
+    { title: "50代で転職した、リアルな話", hook: "「50代の転職は無謀」と言われた。でもやってみたら、意外な景色が広がっていた。", points: ["転職を決めた本当の理由", "年齢の壁と感じたこと・感じなかったこと", "転職後の正直な感想"], cta: "転職を迷っている50代の方、気軽にコメントください。" },
+    { title: "お金の不安、50代の現実", hook: "老後2000万問題を知ったとき、正直パニックになった。でも今は少し落ち着いている。", points: ["不安を直視することから始めた", "小さく始めた資産の見直し", "お金より大切にしたいものを決めた"], cta: "老後のお金、どう向き合っていますか？" },
+    { title: "50代、友達関係が変わった", hook: "20年来の友人と疎遠になった。悲しいけれど、それが自然だったと今は思う。", points: ["関係が変わったきっかけ", "無理してつながることをやめた経緯", "今の自分に合う人間関係のつくり方"], cta: "友達関係、年齢とともに変化しましたか？" },
+    { title: "親の介護と自分の人生の両立", hook: "「いい子」でいることをやめた日から、介護が少し楽になった。", points: ["完璧な介護をしようとして限界を迎えた話", "罪悪感との向き合い方", "自分を守りながら介護を続ける工夫"], cta: "介護中の方、無理していませんか？" },
+    { title: "体の変化を受け入れた50代", hook: "鏡を見るのが嫌だった時期がある。でも今は、この顔が好きだ。", points: ["外見の変化に落ち込んだ正直な気持ち", "受け入れるきっかけになった出来事", "年齢を重ねることを楽しむ視点"], cta: "自分の外見、どう感じていますか？" },
+    { title: "50代から始めた、ひとり時間", hook: "家族のために生きてきた私が、初めて「ひとり旅」をした日のこと。", points: ["ひとり時間を持てなかった理由", "初めてのひとり行動で気づいたこと", "ひとり時間が人生を豊かにする理由"], cta: "ひとりの時間、どう使っていますか？" },
+    { title: "夫婦関係、50代の正直な話", hook: "好きとか嫌いとかじゃなくて、「一緒にいる理由」を考えた50代。", points: ["夫婦関係が変化したと感じた瞬間", "話し合いでわかり合えたこと・できなかったこと", "今の夫婦のかたちを選んだ理由"], cta: "50代の夫婦関係、どう向き合っていますか？" },
+    { title: "50代でやっと好きな服を着た", hook: "ずっと「似合う服」を着ていた。50代になって初めて「好きな服」を着た。", points: ["似合うより好きを優先した理由", "ファッションで自己表現することへの変化", "年齢を言い訳にしないスタイルの見つけ方"], cta: "今の自分のファッション、楽しんでいますか？" },
+    { title: "50代で学び直した、その理由", hook: "学校を卒業して30年。また学ぶことを選んだ理由は、恐怖だった。", points: ["学び直しのきっかけとなった出来事", "何を学び直したか具体的に", "学ぶことで変わった自分"], cta: "最近、新しく学んだことはありますか？" },
+    { title: "50代、孤独と向き合った話", hook: "賑やかな日常の中で、ふと感じる孤独。それは悪いことじゃないと気づいた。", points: ["孤独を感じるようになった背景", "孤独と孤立の違いを理解した", "孤独を力に変えた体験"], cta: "孤独を感じること、ありますか？" },
+    { title: "やりたいことリスト、作ってみた", hook: "「死ぬまでにしたいこと」を書き出したら、意外と小さなことばかりだった。", points: ["リストを作ったきっかけ", "書き出してわかった本当の欲望", "実際に叶えたこととその感想"], cta: "あなたのやりたいことリスト、何が入っていますか？" },
+    { title: "キャリアの棚卸し、やってみた", hook: "履歴書を書いていたら、自分のことが全然わからなかった。それが転機だった。", points: ["キャリアの棚卸しをしようと思ったきっかけ", "やってみてわかった自分の強みと弱み", "これからの働き方に活かしたこと"], cta: "自分のキャリア、最近振り返りましたか？" },
+    { title: "「ありがとう」が言えなかった話", hook: "感謝を伝えることが苦手だった私が、50代でやっと変われた理由。", points: ["感謝を言えなかった本当の理由", "言葉にすることで変わった関係", "感謝を伝える習慣をつくった方法"], cta: "最近、誰かに感謝を伝えましたか？" },
+  ],
+  aidesign: [
+    { title: "AIツール、使ってみた正直な感想", hook: "「AIに仕事を奪われる」と怖かった私が、使ってみたら意外な感情を持った話。", points: ["使う前の恐怖心の正体", "初めて使ったときの驚き", "今の自分のAI活用法"], cta: "AIツール、もう使っていますか？" },
+    { title: "Canvaで変わった、私のデザイン", hook: "デザインの知識ゼロから始めたCanva。今では私の仕事に欠かせないツールになった。", points: ["Canva導入前と後の変化", "特に役立っている機能3つ", "初心者が最初に作るべきもの"], cta: "Canva使ってみたい方、どんな用途で使いたいですか？" },
+    { title: "ChatGPTで文章が変わった話", hook: "文章を書くのが苦手だった私が、AIを使って変わったこと・変わらなかったこと。", points: ["AIに頼った文章と自分の文章の違い", "うまく使うためのコツ", "AIと自分の「共著」という考え方"], cta: "文章にAIを使っていますか？" },
+    { title: "noteのサムネ、AI画像で作った", hook: "イラストが描けない私でも、AI画像生成でnoteのサムネが作れるようになった。", points: ["使ったツールと具体的な手順", "うまくいったプロンプトのコツ", "著作権への注意点"], cta: "AI画像生成、試したことありますか？" },
+    { title: "フォントひとつで印象が変わる", hook: "デザインの勉強をして一番驚いたのは、フォントの力だった。", points: ["フォント選びの基本ルール", "和文フォントのおすすめと使い分け", "フォントで失敗しないための法則"], cta: "好きなフォント、ありますか？" },
+    { title: "色使いが変わると世界が変わる", hook: "「なんかダサい」の原因は、だいたい色だった。色彩の基本を学んで変わったこと。", points: ["カラーパレットの作り方", "失敗しない配色の3つのルール", "自分のブランドカラーの決め方"], cta: "あなたのイメージカラーは何色ですか？" },
+    { title: "AIに仕事を任せてみた1週間", hook: "1週間、できる限りAIに仕事を任せてみた実験。結果は予想外だった。", points: ["任せた仕事と任せなかった仕事の基準", "AIが得意なこと・苦手なこと", "人間にしかできないことの再発見"], cta: "AIに任せてみたい仕事、何かありますか？" },
+    { title: "デザイン初心者が陥る罠5つ", hook: "デザインを始めたとき、全部やってしまった。あの頃の自分に伝えたいこと。", points: ["情報を詰め込みすぎる問題", "余白を恐れる心理", "フォントを使いすぎるクセ"], cta: "デザインで悩んでいることはありますか？" },
+    { title: "AIで読書量が3倍になった話", hook: "本を読む時間がない、と思っていた。AIを使った読書法で変わったこと。", points: ["AI要約との正しい付き合い方", "深く読む本と広く知る本の使い分け", "読書メモをAIで整理する方法"], cta: "最近読んだ本、何ですか？" },
+    { title: "SNS投稿、AIで効率化した方法", hook: "毎日の投稿に疲れていた私が、AIで楽になりながら質も上がった話。", points: ["投稿ネタ出しにAIを使う方法", "文章の磨き方：AIと自分の役割分担", "自分らしさを失わないための工夫"], cta: "SNS投稿、どれくらい時間かけていますか？" },
+    { title: "ロゴをCanvaで自作してみた", hook: "プロに頼む予算がなかった私が、Canvaでロゴを作った全プロセス。", points: ["ロゴ作成で意識した3つのポイント", "配色とフォントの選び方", "完成品と反省点の正直な評価"], cta: "ロゴ、自分で作ってみたいですか？" },
+    { title: "AIと私の、創作の話", hook: "AIが絵を描き、文を書く時代に、私たちは何を「創る」のか考えた。", points: ["AI創作への最初の違和感", "AIを使って気づいた人間の創造性", "これからの「作ること」の意味"], cta: "AIの創作物、どう感じますか？" },
+    { title: "Notionで人生が整理された話", hook: "頭の中がいつもごちゃごちゃだった私が、Notionを使って変わったこと。", points: ["Notionを始めた理由と最初のつまずき", "今使っているテンプレート紹介", "デジタル整理で人生が変わった理由"], cta: "メモ・管理ツール、何を使っていますか？" },
+    { title: "50代がAIを使うべき理由", hook: "若い人のものだと思っていたAI。使ってみたら、むしろ私たちの世代にこそ必要だった。", points: ["50代特有のAI活用シーン", "年齢を逆手に取ったAI使いこなし術", "デジタル格差を怖れないための第一歩"], cta: "AI、どこから始めましたか？" },
+    { title: "デザインで自分ブランドを作る", hook: "バラバラだった私のSNSとnoteが、デザインを統一したら見違えるようになった。", points: ["ブランドカラーとフォントを決める方法", "プロフィール画像とヘッダーの統一感", "読者に「覚えてもらえる」デザインとは"], cta: "あなたの発信、デザイン統一していますか？" },
+    { title: "プレゼン資料、AIで変わった", hook: "苦手だったプレゼン資料作りがAIのおかげで楽しくなった理由。", points: ["構成をAIに相談する方法", "デザインテンプレートの選び方", "伝わるスライドの3つの条件"], cta: "プレゼン資料、どう作っていますか？" },
+  ],
+  quantum: [
+    { title: "量子力学で「引き寄せ」を考えた", hook: "スピリチュアルが苦手な私が、量子力学の本を読んで腑に落ちた話。", points: ["観測問題と意識の関係をわかりやすく", "「見ることで現実が変わる」の科学的解釈", "日常に使える量子的思考法"], cta: "引き寄せの法則、信じますか？" },
+    { title: "波動を上げるって、科学的には？", hook: "「波動を上げる」という言葉が苦手だった。でも物理学で考えると、面白いことがわかった。", points: ["波動とは何かを物理学で説明", "感情と周波数の関係の研究", "波動を「上げる」行動の科学的根拠"], cta: "波動・エネルギー、気にしていますか？" },
+    { title: "「意識が現実を作る」は本当か", hook: "哲学でも物理学でも問われてきた問い。50代の私なりの答えを出してみた。", points: ["二重スリット実験が示すこと", "意識と物質の境界線", "「思考が現実化する」への科学的アプローチ"], cta: "意識と現実の関係、どう思いますか？" },
+    { title: "量子もつれと人間関係の話", hook: "離れていても影響し合う「量子もつれ」。人間関係にも同じことが起きている気がした。", points: ["量子もつれの基本をわかりやすく", "共鳴する人間関係の不思議", "引き合う人・離れる人の法則"], cta: "不思議な縁を感じた経験、ありますか？" },
+    { title: "多世界解釈と「もう一人の私」", hook: "量子力学の多世界解釈を知ったとき、選ばなかった人生のことを思った。", points: ["多世界解釈とは何かを簡単に", "選択と可能性の量子的な見方", "「今ここ」を選ぶことの意味"], cta: "選ばなかった道、たまに考えますか？" },
+    { title: "ゼロポイントフィールドを知った日", hook: "宇宙の97%は「空白」らしい。その空白に意識があるとしたら？", points: ["ゼロポイントフィールドの科学的説明", "日本人研究者が発見した意識との関係", "この概念が私の人生観を変えた理由"], cta: "宇宙の神秘、興味ありますか？" },
+    { title: "潜在意識の書き換えを試した話", hook: "「潜在意識を変えれば人生が変わる」。信じられなかった私が実験してみた結果。", points: ["潜在意識と顕在意識の違い", "試した3つの書き換えアプローチ", "変わったこと・変わらなかったこと正直に"], cta: "潜在意識、アプローチしてみたいですか？" },
+    { title: "瞑想と量子力学の意外な接点", hook: "瞑想が脳に与える影響の研究と、量子力学の観測問題に共通点を見つけた。", points: ["マインドフルネスの神経科学的根拠", "観察者効果と瞑想の関係", "日常的に実践できる量子的瞑想法"], cta: "瞑想、やっていますか？" },
+    { title: "「今この瞬間」しか存在しない説", hook: "物理学者が言う「時間は存在しない」。この概念が私の焦りを消してくれた。", points: ["時間の非実在性の物理学的説明", "過去も未来も「今」にある考え方", "この概念で変わった日常の見え方"], cta: "今この瞬間、どんな気持ちですか？" },
+    { title: "感謝と量子力学の話", hook: "「感謝すると良いことが起きる」をスピリチュアルではなく科学で考えてみた。", points: ["感謝が脳と神経系に与える影響", "周波数と感情の関係研究", "感謝習慣を続けて変わったこと"], cta: "感謝日記、つけてみたいですか？" },
+    { title: "シンクロニシティは偶然じゃない？", hook: "あまりにも不思議なタイミングの一致が続いた。これは偶然なのか、必然なのか。", points: ["ユングが提唱したシンクロニシティとは", "量子力学と「意味ある偶然」の関係", "シンクロに気づくための意識の向け方"], cta: "最近、不思議な偶然を体験しましたか？" },
+    { title: "エピジェネティクスで人生を変える", hook: "遺伝子は変えられないと思っていた。でもエピジェネティクスは「使い方」が変わると言う。", points: ["エピジェネティクスをわかりやすく説明", "環境・思考・食事が遺伝子発現を変える", "自分の可能性を広げる習慣"], cta: "遺伝のせいにしたいこと、ありますか？" },
+    { title: "量子的思考で悩みが消えた話", hook: "白か黒かで考えていた私が、量子的な「重ね合わせ」の思考法を知って楽になった。", points: ["量子の重ね合わせを思考に応用する方法", "二項対立をやめると見えてくるもの", "グレーゾーンを受け入れる練習"], cta: "白黒はっきりさせたくなりますか？" },
+    { title: "細胞の記憶と過去の手放し方", hook: "トラウマが体に残るという研究を知って、やっと自分の体の反応が理解できた。", points: ["ソマティック心理学の基本", "細胞レベルで記憶が刻まれる仕組み", "体から過去を解放するアプローチ"], cta: "体に残っている緊張、感じますか？" },
+    { title: "「引き算」の宇宙論と50代の生き方", hook: "宇宙は膨張するにつれて「より少なく」なるらしい。それが50代の生き方と重なった。", points: ["宇宙の熱力学と引き算の哲学", "持ち物・人間関係・役割を減らした経験", "少ない中に豊かさを見つける量子的視点"], cta: "最近、何かを手放しましたか？" },
+    { title: "ホログラフィック宇宙論と私の話", hook: "宇宙が「ホログラム」かもしれないという説を聞いたとき、妙に納得した理由。", points: ["ホログラフィック原理をわかりやすく", "部分に全体が宿るという発想の応用", "この視点で見ると自分の存在が変わる"], cta: "宇宙の本質、どう想像しますか？" },
+  ],
+};
+
+// 状態
+const state = { selected: { women50: true, aidesign: true, quantum: true }, currentItems: null };
+
+// 初期化
+function init() {
+  const total = Object.values(NETA).reduce((s, a) => s + a.length, 0);
+  document.getElementById('stock-count').textContent = `テーマを選んでボタンひとつ · 全${total}本ストック`;
+
+  const container = document.getElementById('themes');
+  Object.entries(THEMES).forEach(([key, th]) => {
+    const card = document.createElement('div');
+    card.className = 'theme-card sel';
+    card.id = `card-${key}`;
+    card.style.setProperty('--card-color', th.color);
+    card.style.setProperty('--card-bg', th.bg);
+    card.innerHTML = `
+      <div class="theme-check">✓</div>
+      <span class="theme-icon">${th.icon}</span>
+      <div class="theme-info">
+        <div class="theme-name">${th.name}</div>
+        <div class="theme-count">${NETA[key].length}本収録</div>
+      </div>`;
+    card.onclick = () => toggleTheme(key);
+    container.appendChild(card);
+  });
+
+  // LINE設定読み込み
+  try {
+    const token = localStorage.getItem('line_token');
+    const uid = localStorage.getItem('line_userid');
+    if (token && uid) {
+      document.getElementById('lineSendBtn').style.display = 'block';
+      document.getElementById('lineNote').style.display = 'none';
+    }
+  } catch(e) {}
+}
+
+function toggleTheme(key) {
+  state.selected[key] = !state.selected[key];
+  const card = document.getElementById(`card-${key}`);
+  card.classList.toggle('sel', state.selected[key]);
+}
+
+function collectNeta() {
+  const keys = Object.entries(state.selected).filter(([,v]) => v).map(([k]) => k);
+  if (keys.length === 0) return;
+
+  document.getElementById('loading').classList.add('on');
+  document.getElementById('results').classList.remove('on');
+
+  setTimeout(() => {
+    const today = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+    const items = keys.map(key => {
+      const arr = NETA[key];
+      return { ...arr[Math.floor(Math.random() * arr.length)], theme: key };
+    });
+    state.currentItems = items;
+    renderResults(items, today);
+    document.getElementById('loading').classList.remove('on');
+    document.getElementById('results').classList.add('on');
+    setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }, 800);
+}
+
+function renderResults(items, today) {
+  document.getElementById('resultsDate').textContent = today;
+  const container = document.getElementById('netaCards');
+  container.innerHTML = '';
+  items.forEach((item, i) => {
+    const th = THEMES[item.theme];
+    const card = document.createElement('div');
+    card.className = 'neta-card';
+    card.innerHTML = `
+      <button class="copy-btn" id="copybtn-${i}" onclick="copyCard(${i})">コピー</button>
+      <div class="neta-badge" style="background:${th.bg};color:${th.color}">${th.icon} ${th.name}</div>
+      <div class="neta-title">${item.title}</div>
+      <div class="neta-hook">${item.hook}</div>
+      <div class="neta-points">
+        <div class="neta-points-label">書くべきポイント</div>
+        ${item.points.map(p => `<div class="neta-point">${p}</div>`).join('')}
+      </div>
+      <div class="neta-cta">💬 ${item.cta}</div>`;
+    container.appendChild(card);
+  });
+}
+
+function buildLineText() {
+  if (!state.currentItems) return '';
+  const today = document.getElementById('resultsDate').textContent;
+  let t = `📝 noteネタ収集レポート\n${today}\n${'─'.repeat(20)}\n\n`;
+  state.currentItems.forEach(item => {
+    const th = THEMES[item.theme];
+    t += `${th.icon}【${th.name}】\n📌 ${item.title}\n\n${item.hook}\n\n▼ポイント\n`;
+    item.points.forEach(p => { t += `・${p}\n`; });
+    t += `\n💬 ${item.cta}\n\n${'─'.repeat(20)}\n\n`;
+  });
+  return t + '✦ まゆみのnoteネタ帳';
+}
+
+function copyCard(i) {
+  const item = state.currentItems[i];
+  const t = `${item.title}\n\n${item.hook}\n\n▼ポイント\n${item.points.map(p=>`・${p}`).join('\n')}\n\n💬 ${item.cta}`;
+  navigator.clipboard.writeText(t).then(() => {
+    const btn = document.getElementById(`copybtn-${i}`);
+    btn.textContent = '✓ コピー済';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'コピー'; btn.classList.remove('done'); }, 2000);
+  });
+}
+
+function copyLineText() {
+  navigator.clipboard.writeText(buildLineText()).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ コピーしました！';
+    setTimeout(() => { btn.textContent = '📋 テキストをコピー'; }, 2500);
+  });
+}
+
+async function sendToLine() {
+  const token = localStorage.getItem('line_token');
+  const userId = localStorage.getItem('line_userid');
+  if (!token || !userId) { openSettings(); return; }
+
+  const btn = document.getElementById('lineSendBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中…';
+  document.getElementById('lineStatus').textContent = '';
+
+  const text = buildLineText();
+  const chunks = [];
+  let cur = '';
+  text.split('\n').forEach(line => {
+    if ((cur + line + '\n').length > 4500) { chunks.push(cur.trim()); cur = line + '\n'; }
+    else cur += line + '\n';
+  });
+  if (cur.trim()) chunks.push(cur.trim());
+
+  try {
+    for (const chunk of chunks) {
+      const r = await fetch('https://api.line.me/v2/bot/message/push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ to: userId, messages: [{ type: 'text', text: chunk }] }),
+      });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.message); }
+    }
+    document.getElementById('lineStatus').textContent = '✅ LINEに送信しました！';
+    btn.textContent = '✅ 送信完了';
+    setTimeout(() => { btn.textContent = '📨 LINEに直接送信'; btn.disabled = false; document.getElementById('lineStatus').textContent = ''; }, 3000);
+  } catch(e) {
+    document.getElementById('lineStatus').textContent = '❌ ' + e.message;
+    btn.textContent = '📨 LINEに直接送信';
+    btn.disabled = false;
+  }
+}
+
+function openSettings() {
+  try {
+    document.getElementById('inputToken').value = localStorage.getItem('line_token') || '';
+    document.getElementById('inputUserId').value = localStorage.getItem('line_userid') || '';
+  } catch(e) {}
+  document.getElementById('modal').classList.add('on');
+}
+
+function saveSettings() {
+  const token = document.getElementById('inputToken').value.trim();
+  const userId = document.getElementById('inputUserId').value.trim();
+  if (!token || !userId) { alert('両方入力してください'); return; }
+  try {
+    localStorage.setItem('line_token', token);
+    localStorage.setItem('line_userid', userId);
+  } catch(e) {}
+  document.getElementById('lineSendBtn').style.display = 'block';
+  document.getElementById('lineNote').style.display = 'none';
+  document.getElementById('modal').classList.remove('on');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('on');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
